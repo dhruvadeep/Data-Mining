@@ -16,7 +16,6 @@ from typing import Any
 # This can be done by using the optional parent_key variable
 
 
-
 def t2c_python_dict_to_toml_string(python_dict: dict[str, Any], parent_key: str = "") -> str:
     return ""
 
