@@ -6,6 +6,7 @@ import duckdb
 import pandas as pd
 from pandas import Interval
 
+
 def get_fec_dataset(filename: str = "resources/fec_2012_contribution_subset.csv") -> pd.DataFrame:
     # read the csv file into a Pandas data frame
 
@@ -43,30 +44,25 @@ def tot_amount_state_pandas(fec_df: pd.DataFrame, state: str) -> float:
 def tot_amount_job_pandas(fec_df: pd.DataFrame, candidate: str, company: str, job: str) -> float:
     # Correct way to filter with multiple conditions
     temp = fec_df[
-        (fec_df["cand_nm"] == candidate) &
-        (fec_df["contbr_employer"].str.contains(company)) &
-        (fec_df["contbr_occupation"].str.contains(job))
+        (fec_df["cand_nm"] == candidate)
+        & (fec_df["contbr_employer"].str.contains(company))
+        & (fec_df["contbr_occupation"].str.contains(job))
     ]
     return temp["contb_receipt_amt"].sum()
 
 
-
 def tot_contributions_for_cand_pandas(fec_df: pd.DataFrame, candidate: str) -> pd.Series:
-    return fec_df[
-        (fec_df["cand_nm"] == candidate)
-    ].groupby(by="contbr_st")["contbr_nm"].count()
+    return fec_df[(fec_df["cand_nm"] == candidate)].groupby(by="contbr_st")["contbr_nm"].count()
 
 
 def top_10_state_pandas(fec_df: pd.DataFrame, candidate: str) -> pd.Series:
-    return tot_contributions_for_cand_pandas(
-        fec_df, candidate
-        ).sort_values(
-            ascending=False
-            ).head(10)
+    return (
+        tot_contributions_for_cand_pandas(fec_df, candidate).sort_values(ascending=False).head(10)
+    )
 
 
 def discretization_pandas(fec_df: pd.DataFrame) -> pd.DataFrame:
-    bins = [0] +  [10**i for i in range(8)]
+    bins = [0] + [10**i for i in range(8)]
     labels = []
     for i in range(1, len(bins)):
         ptr_1 = bins[i - 1]
@@ -74,21 +70,16 @@ def discretization_pandas(fec_df: pd.DataFrame) -> pd.DataFrame:
         temp = Interval(left=ptr_1, right=ptr_2, closed="right")
         labels.append(temp)
     fec_df["amount_bucket"] = pd.cut(
-        fec_df["contb_receipt_amt"],
-        bins=bins,
-        labels=labels,
-        right=True
+        fec_df["contb_receipt_amt"], bins=bins, labels=labels, right=True
     )
-    temp = fec_df.groupby(
-            ["cand_nm", "amount_bucket"],
-            observed=False
-        )
+    temp = fec_df.groupby(["cand_nm", "amount_bucket"], observed=False)
     return temp["contb_receipt_amt"].sum().unstack(0)
+
 
 def load_fec_data_to_duckdb(
     filename: str = "resources/fec_2012_contribution_subset.csv",
 ) -> duckdb.DuckDBPyConnection:
-    conn = duckdb.connect()
+    conn = duckdb.connect(":memory:")
     conn.execute(f"""
     CREATE TABLE fec_table AS SELECT * FROM read_csv('{filename}')
     """)
@@ -112,22 +103,20 @@ ORDER BY cand_nm
 """
 
 t32b2_query = """
-SELECT contbr_st, COUNT(contbr_nm) AS num_contributors
+SELECT COUNT(cmte_id) AS num_contributors,contbr_st as state
 FROM fec_table
 WHERE cand_nm = 'Obama, Barack' AND contb_receipt_amt > 0
-GROUP BY contbr_st
+GROUP BY state
 ORDER BY num_contributors DESC
 LIMIT 10
 """
 
 
-
 t32c1_query = """
-SELECT CAST(COUNT(DISTINCT contbr_nm) AS INTEGER) AS num_contributors
-,CAST(contbr_st as STRING) as contbr_st
+SELECT COUNT(cmte_id) AS num_contributors,contbr_st as state
 FROM fec_df
 WHERE cand_nm = 'Obama, Barack' AND contb_receipt_amt > 0
-GROUP BY contbr_st
+GROUP BY state
 ORDER BY num_contributors DESC
 LIMIT 10
 """
