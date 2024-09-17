@@ -17,42 +17,30 @@ from typing import Any
 
 
 def t2c_python_dict_to_toml_string(python_dict: dict[str, Any], parent_key: str = "") -> str:
-    """Ignore the below implementation."""
-    # temp = ""
-    # # print(python_dict)
-    # for i in python_dict:
-    #     if isinstance(python_dict[i], dict):
-    #         temp += "\n"
-    #         temp += f"[{i}]\n"
-    #         for j in python_dict[i]:
+    def serialize_value(value):
+        if isinstance(value, int):
+            return str(value)
+        elif isinstance(value, str):
+            return f"'{value}'"
+        elif isinstance(value, list):
+            list_elements = [serialize_value(item) for item in value]
+            return "[" + ", ".join(list_elements) + "]"
+        elif isinstance(value, dict):
+            return ""
+        else:
+            raise TypeError(f"Unsupported type: {type(value)}")
 
-    #             if isinstance(python_dict[i][j], dict):
-    #                 temp += f"\n{t2c_python_dict_to_toml_string(python_dict[i][j])}"
-    #             temp += j + "= " + f"{"" if isinstance(python_dict[i][j], int)
-    #                       or isinstance(python_dict[i][j], list) else "'"}{
-    #                           python_dict[i][j]}{"" if isinstance(python_dict[i][j], int)
-    #                       or isinstance(python_dict[i][j], list) else "'"}\n"
-    #     else:
-    #         temp += i + "= " + f"{"" if isinstance(python_dict[i], int) or
-    #                 isinstance(python_dict[i], list) else "'"}{
-    #                       python_dict[i]}{"" if isinstance(python_dict[i], int)
-    #                           or isinstance(python_dict[i], list) else "'"}\n"
-    # # print(temp)
-    # return temp
-    temp = ""
+    toml_string = ""
 
     for key, value in python_dict.items():
         full_key = f"{parent_key}.{key}" if parent_key else key
         if isinstance(value, dict):
-            temp += f"\n[{full_key}]\n"
-            temp += t2c_python_dict_to_toml_string(value, full_key)
-        elif isinstance(value, list or int):
-            temp += f"{key} = {value}\n"
+            toml_string += f"\n[{full_key}]\n"
+            toml_string += t2c_python_dict_to_toml_string(value, full_key)
         else:
-            temp += f"{key} = '{value}'\n"
+            toml_string += f"{key} = {serialize_value(value)}\n"
 
-    return temp
-
+    return toml_string
 
 def t2d_python_dict_to_yaml_string(python_dict: dict[str, Any], indent: int = 0) -> str:
     """Convert a Python dictionary to a YAML-formatted string."""

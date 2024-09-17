@@ -112,7 +112,7 @@ ORDER BY cand_nm
 """
 
 t32b2_query = """
-SELECT contbr_st, COUNT(DISTINCT contbr_nm) AS num_contributors
+SELECT contbr_st, COUNT(contbr_nm) AS num_contributors
 FROM fec_table
 WHERE cand_nm = 'Obama, Barack' AND contb_receipt_amt > 0
 GROUP BY contbr_st
@@ -121,5 +121,13 @@ LIMIT 10
 """
 
 
+
 t32c1_query = """
+SELECT CAST(COUNT(DISTINCT contbr_nm) AS INTEGER) AS num_contributors
+,CAST(contbr_st as STRING) as contbr_st
+FROM fec_df
+WHERE cand_nm = 'Obama, Barack' AND contb_receipt_amt > 0
+GROUP BY contbr_st
+ORDER BY num_contributors DESC
+LIMIT 10
 """
