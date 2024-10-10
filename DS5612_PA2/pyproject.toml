@@ -1,0 +1,110 @@
+[project]
+name = "ds5612-pa2"
+version = "0.1.0"
+description = "Add your description here"
+authors = [
+    { name = "saravanan-thirumuruganathan", email = "saravanan.thirumuruganathan@gmail.com" }
+]
+dependencies = [
+    "jupyterlab~=4.2.5",
+    "pydantic~=2.9.1",
+    "scikit-learn~=1.5.1",
+    "typer~=0.12.5",
+    "textual~=0.79.1",
+    "pytest-asyncio~=0.24.0",
+    "fastapi[standard]~=0.114.2",
+    "gradio~=4.44.0",
+    "rich~=13.8.1",
+    "mlxtend~=0.23.1",
+    "jinja2~=3.1.4",
+]
+readme = "README.md"
+requires-python = "~= 3.12"
+
+[build-system]
+requires = ["pdm-backend"]
+build-backend = "pdm.backend"
+
+[tool.rye]
+managed = true
+dev-dependencies = [
+    "pytest~=8.3.2",
+    "pylint~=3.2.6",
+]
+
+[tool.rye.scripts]
+fmt = "rye fmt"
+lint = "rye lint"
+check = "rye run pylint src"
+test = "rye test"
+
+typer_task="rye run python code/task2/typer_demo.py"
+textual_task="rye run python code/task2/textual_demo.py"
+fastapi_task="rye run python code/task2/fastapi_demo.py"
+gradio_task="rye run python code/task2/gradio_demo.py"
+error_estimation="rye run python code/error_estimation.py"
+hp_tuning="rye run python code/hp_configs.py"
+ml_pipeline="rye run python code/modern_ml_pipeline.py"
+ml_report="rye run python code/model_reports.py"
+all = { chain = ["fmt", "lint", "check", "test"] }
+
+
+[tool.ruff]
+line-length = 100
+
+
+[tool.ruff.lint]
+# Disable fix for unused imports (`F401`).
+# By default, Ruff has this annoying habit of automatically removing unused imports.
+# This is good in general.. but sometimes Ruff can be too aggressive. So stop this.
+unfixable = ["F401"] 
+select = ["ALL"]
+ignore = ["C901", 
+            "COM812",
+            "D100", 
+            "D103", 
+            "D104", 
+            "D107", # 
+            "D203", 
+            "D213",
+            "ERA001",
+            "EM101", #Exception must not use a string literal, assign to variable first
+            "EM102", #Exception must not use an f-string literal, assign to variable first
+            "ISC001",
+            "N806", # non-lowercase-variable-in-function
+            "PD010", #`.pivot_table` is preferred to `.pivot` or `.unstack`; provides same functionality
+            "PLR2004", #Magic value used in comparison, consider replacing  with a constant variable
+            "PT023", # Use `@pytest.mark.blah()` over `@pytest.mark.blah`
+            "S101", #Use of `assert` detected
+            "S311",
+            "S608", #Possible SQL injection vector through string-based query construction
+            "TRY003", #Avoid specifying long messages outside the exception class
+            "T201"]
+
+[tool.ruff.lint.isort]
+lines-after-imports = 2
+
+[tool.pylint.messages_control]
+disable = '''missing-module-docstring,
+    missing-class-docstring,
+    missing-function-docstring,
+'''
+
+# We are registering custom markers so that pytest does not complain
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope="function"
+markers = [
+    "t1pydantic",
+    "t2typer", "t2textual", "t2fastAPI", "t2gradio",
+    "t3_custom_metrics",
+    "t4_error_estimator",
+    "t5_hp_tuner",
+    "t6_ml_pipeline",
+]
+filterwarnings = [
+    "ignore:The truth value of an empty array is ambiguous.",
+    "ignore:There is no current event loop",
+    "ignore:on_event is deprecated, use lifespan event handlers instead.",
+    "ignore:The total space of parameters 3 is smaller than n_iter=10."
+]

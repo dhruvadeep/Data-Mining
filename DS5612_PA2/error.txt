@@ -1,0 +1,234 @@
+Running tests for ds5612-pa2 (C:\Users\dhruv\OneDrive\Desktop\DS5612_PA2)
+============================= test session starts =============================
+platform win32 -- Python 3.12.6, pytest-8.3.2, pluggy-1.5.0 -- C:\Users\dhruv\OneDrive\Desktop\DS5612_PA2\.venv\Scripts\python.exe
+cachedir: .pytest_cache
+rootdir: C:\Users\dhruv\OneDrive\Desktop\DS5612_PA2
+configfile: pyproject.toml
+plugins: anyio-4.4.0, asyncio-0.24.0
+asyncio: mode=Mode.AUTO, default_loop_scope=function
+collecting ... collected 42 items / 36 deselected / 6 selected
+
+src/ds5612_pa2/tests/test_pydantic.py::test_dataset_config_specification FAILED [ 16%]
+src/ds5612_pa2/tests/test_pydantic.py::test_dataset_config_file_path PASSED [ 33%]
+src/ds5612_pa2/tests/test_pydantic.py::test_dataset_config_size_validator PASSED [ 50%]
+src/ds5612_pa2/tests/test_pydantic.py::test_decision_tree_config_specification FAILED [ 66%]
+src/ds5612_pa2/tests/test_pydantic.py::test_naive_bayes_config_specification FAILED [ 83%]
+src/ds5612_pa2/tests/test_pydantic.py::test_knn_config_specification FAILED [100%]
+
+================================== FAILURES ===================================
+______________________ test_dataset_config_specification ______________________
+
+    @pytest.mark.t1pydantic()
+    def test_dataset_config_specification() -> None:
+        # Get the fields of the model
+        model_fields = DatasetConfig.model_fields
+    
+        check_field_info(
+            model_fields=model_fields,
+            field_name="file_path",
+            field_type=pathlib.Path,
+            field_description="Path to the dataset file",
+        )
+        check_field_info(
+            model_fields=model_fields,
+            field_name="train_size",
+            field_type=float,
+            field_description="Proportion of data to use for training",
+            default=0.3,
+            ge=0.1,
+            le=0.5,
+        )
+    
+        check_field_info(
+            model_fields=model_fields,
+            field_name="validation_size",
+            field_type=float,
+            field_description="Proportion of data to use for validation",
+            default=0.1,
+            ge=0.1,
+            le=0.2,
+        )
+    
+        check_field_info(
+            model_fields=model_fields,
+            field_name="test_size",
+            field_type=float,
+            field_description="Proportion of data to use for testing",
+            default=0.1,
+            ge=0.1,
+            le=0.3,
+        )
+    
+>       check_field_info(
+            model_fields=model_fields,
+            field_name="production_size",
+            field_type=float,
+            field_description="Proportion of data to use for Production",
+            default=0.5,
+            ge=0.1,
+            le=0.5,
+        )
+
+src\ds5612_pa2\tests\test_pydantic.py:84: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+model_fields = {'file_path': FieldInfo(annotation=Path, required=True, description='Path to the dataset file', metadata=[PathType(pat...ed=False, default=0.5, description='Proportion of data to use for Production', metadata=[Ge(ge=0.0), Le(le=0.7)]), ...}
+field_name = 'production_size', field_type = <class 'float'>
+field_description = 'Proportion of data to use for Production', default = 0.5
+ge = 0.1, le = 0.5
+
+    def check_field_info(  # noqa: PLR0913
+        model_fields: dict[str, FieldInfo],
+        field_name: str,
+        field_type=None,  # noqa: ANN001
+        field_description=None,  # noqa: ANN001
+        default=None,  # noqa: ANN001
+        ge=None,  # noqa: ANN001
+        le=None,  # noqa: ANN001
+    ) -> None:
+        assert field_name in model_fields
+        if field_type is not None:
+            assert model_fields[field_name].annotation == field_type
+        if field_description is not None:
+            assert model_fields[field_name].description == field_description
+        if default is not None:
+            assert model_fields[field_name].default == default
+        if ge is not None:
+>           assert annotated_types.Ge(ge=ge) in model_fields[field_name].metadata
+E           AssertionError: assert Ge(ge=0.1) in [Ge(ge=0.0), Le(le=0.7)]
+E            +  where Ge(ge=0.1) = <class 'annotated_types.Ge'>(ge=0.1)
+E            +    where <class 'annotated_types.Ge'> = annotated_types.Ge
+E            +  and   [Ge(ge=0.0), Le(le=0.7)] = FieldInfo(annotation=float, required=False, default=0.5, description='Proportion of data to use for Production', metadata=[Ge(ge=0.0), Le(le=0.7)]).metadata
+
+src\ds5612_pa2\tests\test_pydantic.py:38: AssertionError
+___________________ test_decision_tree_config_specification ___________________
+
+    @pytest.mark.t1pydantic()
+    def test_decision_tree_config_specification() -> None:
+        # Get the fields of the model
+        model_fields = DecisionTreeConfig.model_fields
+    
+>       check_field_info(
+            model_fields=model_fields,
+            field_name="ml_model_type",
+            field_type=Literal["decision_tree"],
+            default="decision_tree",
+        )
+
+src\ds5612_pa2\tests\test_pydantic.py:122: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+model_fields = {'criterion': FieldInfo(annotation=Any, required=False, default=None), 'max_depth': FieldInfo(annotation=Any, required...tion=Any, required=False, default=None), 'ml_model_type': FieldInfo(annotation=Any, required=False, default=None), ...}
+field_name = 'ml_model_type', field_type = typing.Literal['decision_tree']
+field_description = None, default = 'decision_tree', ge = None, le = None
+
+    def check_field_info(  # noqa: PLR0913
+        model_fields: dict[str, FieldInfo],
+        field_name: str,
+        field_type=None,  # noqa: ANN001
+        field_description=None,  # noqa: ANN001
+        default=None,  # noqa: ANN001
+        ge=None,  # noqa: ANN001
+        le=None,  # noqa: ANN001
+    ) -> None:
+        assert field_name in model_fields
+        if field_type is not None:
+>           assert model_fields[field_name].annotation == field_type
+E           AssertionError: assert typing.Any == typing.Literal['decision_tree']
+E            +  where typing.Any = FieldInfo(annotation=Any, required=False, default=None).annotation
+
+src\ds5612_pa2\tests\test_pydantic.py:32: AssertionError
+____________________ test_naive_bayes_config_specification ____________________
+
+    @pytest.mark.t1pydantic()
+    def test_naive_bayes_config_specification() -> None:
+        # Get the fields of the model
+        model_fields = NaiveBayesConfig.model_fields
+    
+>       check_field_info(
+            model_fields=model_fields,
+            field_name="ml_model_type",
+            field_type=Literal["naive_bayes"],
+            default="naive_bayes",
+        )
+
+src\ds5612_pa2\tests\test_pydantic.py:168: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+model_fields = {'ml_model_type': FieldInfo(annotation=Any, required=False, default=None), 'variant': FieldInfo(annotation=Any, required=False, default=None)}
+field_name = 'ml_model_type', field_type = typing.Literal['naive_bayes']
+field_description = None, default = 'naive_bayes', ge = None, le = None
+
+    def check_field_info(  # noqa: PLR0913
+        model_fields: dict[str, FieldInfo],
+        field_name: str,
+        field_type=None,  # noqa: ANN001
+        field_description=None,  # noqa: ANN001
+        default=None,  # noqa: ANN001
+        ge=None,  # noqa: ANN001
+        le=None,  # noqa: ANN001
+    ) -> None:
+        assert field_name in model_fields
+        if field_type is not None:
+>           assert model_fields[field_name].annotation == field_type
+E           AssertionError: assert typing.Any == typing.Literal['naive_bayes']
+E            +  where typing.Any = FieldInfo(annotation=Any, required=False, default=None).annotation
+
+src\ds5612_pa2\tests\test_pydantic.py:32: AssertionError
+________________________ test_knn_config_specification ________________________
+
+    @pytest.mark.t1pydantic()
+    def test_knn_config_specification() -> None:
+        # Get the fields of the model
+        model_fields = KNNConfig.model_fields
+    
+>       check_field_info(
+            model_fields=model_fields,
+            field_name="ml_model_type",
+            field_type=Literal["knn"],
+            default="knn",
+        )
+
+src\ds5612_pa2\tests\test_pydantic.py:189: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+model_fields = {'ml_model_type': FieldInfo(annotation=Any, required=False, default=None), 'n_neighbors': FieldInfo(annotation=Any, re...Info(annotation=Any, required=False, default=None), 'weights': FieldInfo(annotation=Any, required=False, default=None)}
+field_name = 'ml_model_type', field_type = typing.Literal['knn']
+field_description = None, default = 'knn', ge = None, le = None
+
+    def check_field_info(  # noqa: PLR0913
+        model_fields: dict[str, FieldInfo],
+        field_name: str,
+        field_type=None,  # noqa: ANN001
+        field_description=None,  # noqa: ANN001
+        default=None,  # noqa: ANN001
+        ge=None,  # noqa: ANN001
+        le=None,  # noqa: ANN001
+    ) -> None:
+        assert field_name in model_fields
+        if field_type is not None:
+>           assert model_fields[field_name].annotation == field_type
+E           AssertionError: assert typing.Any == typing.Literal['knn']
+E            +  where typing.Any = FieldInfo(annotation=Any, required=False, default=None).annotation
+
+src\ds5612_pa2\tests\test_pydantic.py:32: AssertionError
+============================== warnings summary ===============================
+src/ds5612_pa2/tests/test_pydantic.py::test_dataset_config_file_path
+  C:\Users\dhruv\OneDrive\Desktop\DS5612_PA2\.venv\Lib\site-packages\pydantic\main.py:211: UserWarning: A custom validator is returning a value other than `self`.
+  Returning anything other than `self` from a top level model validator isn't supported when validating via `__init__`.
+  See the `model_validator` docs (https://docs.pydantic.dev/latest/concepts/validators/#model-validators) for more details.
+    warnings.warn(
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ===========================
+FAILED src/ds5612_pa2/tests/test_pydantic.py::test_dataset_config_specification - AssertionError: assert Ge(ge=0.1) in [Ge(ge=0.0), Le(le=0.7)]
+ +  where Ge(ge=0.1) = <class 'annotated_types.Ge'>(ge=0.1)
+ +    where <class 'annotated_types.Ge'> = annotated_types.Ge
+ +  and   [Ge(ge=0.0), Le(le=0.7)] = FieldInfo(annotation=float, required=False, default=0.5, description='Proportion of data to use for Production', metadata=[Ge(ge=0.0), Le(le=0.7)]).metadata
+FAILED src/ds5612_pa2/tests/test_pydantic.py::test_decision_tree_config_specification - AssertionError: assert typing.Any == typing.Literal['decision_tree']
+ +  where typing.Any = FieldInfo(annotation=Any, required=False, default=None).annotation
+FAILED src/ds5612_pa2/tests/test_pydantic.py::test_naive_bayes_config_specification - AssertionError: assert typing.Any == typing.Literal['naive_bayes']
+ +  where typing.Any = FieldInfo(annotation=Any, required=False, default=None).annotation
+FAILED src/ds5612_pa2/tests/test_pydantic.py::test_knn_config_specification - AssertionError: assert typing.Any == typing.Literal['knn']
+ +  where typing.Any = FieldInfo(annotation=Any, required=False, default=None).annotation
+============ 4 failed, 2 passed, 36 deselected, 1 warning in 7.25s ============
