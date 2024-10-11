@@ -6,42 +6,105 @@
     <title>Classifier Reports</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-
-
-    th, td {
-        border: 1px solid #ddd;
-        padding: 8px;
-        text-align: left;
-    }
-    th {
-        background-color: #f2f2f2;
-        font-weight: bold;
-    }
-    tr:nth-child(even) {
-        background-color: #f9f9f9;
-    }
-    h1 {
-        text-align: center;
-    }
-
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+            font-weight: bold;
+        }
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        h1 {
+            text-align: center;
+        }
     </style>
 </head>
 <body>
     <h1>Classifier Report</h1>
 
+
+
     {% for classifier in classifiers %}
         <div class="classifier-section">
             <h2>Classifier: {{ classifier.classifier_name }}</h2>
             
-            {% block metrics_table scoped%}
+            <h3>Performance Metrics</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th></th>
+                        <th>Precision</th>
+                        <th>Recall</th>
+                        <th>F1-score</th>
+                        <th>Support</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <th colspan="5">Per-Class Metrics</th>
+                    </tr>
+                    {% for label, metrics in classifier.classification_report.items() %}
+                        {% if label != "accuracy" and label != "macro avg" and label != "weighted avg" %}
+                            <tr>
+                                <td>{{ label }}</td>
 
-            {% endblock %}
+                                <td>{{ (metrics['precision'] if 'precision' in metrics else 'N/A') | round(2) }}</td>
+                                <td>{{ (metrics['recall'] if 'recall' in metrics else 'N/A') | round(2) }}</td>
+                                <td>{{ (metrics['f1-score'] if 'f1-score' in metrics else 'N/A') | round(2) }}</td>
+                                <td>{{ metrics.support if 'support' in metrics else 'N/A' }}</td>
+                            </tr>
+                        {% endif %}
+                    {% endfor %}
+                    
+                    <tr>
+                        <th colspan="5">Averages</th>
+                    </tr>
+                    <tr>
+                        <td>macro avg</td>
+                        <td>{{ (classifier.classification_report['macro avg']['precision'] if 'macro avg' in classifier.classification_report else 'N/A') | round(2) }}</td>
+                        <td>{{ (classifier.classification_report['macro avg']['recall'] if 'macro avg' in classifier.classification_report else 'N/A') | round(2) }}</td>
+                        <td>{{ (classifier.classification_report['macro avg']['f1-score'] if 'macro avg' in classifier.classification_report else 'N/A') | round(2) }}</td>
+                        <td>{{ classifier.classification_report['macro avg']['support'] if 'macro avg' in classifier.classification_report else 'N/A' }}</td>
+                    </tr>
+                    <tr>
+                        <td>weighted avg</td>
+                        <td>{{ (classifier.classification_report['weighted avg']['precision'] if 'weighted avg' in classifier.classification_report else 'N/A') | round(2) }}</td>
+                        <td>{{ (classifier.classification_report['weighted avg']['recall'] if 'weighted avg' in classifier.classification_report else 'N/A') | round(2) }}</td>
+                        <td>{{ (classifier.classification_report['weighted avg']['f1-score'] if 'weighted avg' in classifier.classification_report else 'N/A') | round(2) }}</td>
+                        <td>{{ classifier.classification_report['weighted avg']['support'] if 'weighted avg' in classifier.classification_report else 'N/A' }}</td>
+                    </tr>
+                    <tr>
+                        <td>accuracy</td>
+                        <td colspan="3">{{ (classifier.classification_report['accuracy'] if 'accuracy' in classifier.classification_report else 'N/A') | round(2) }}</td>
+                        <td>{{ classifier.classification_report['weighted avg']['support'] if 'weighted avg' in classifier.classification_report else 'N/A' }}</td>
+                    </tr>
+                </tbody>
+            </table>
 
-            {% block metrics_chart scoped%}
-
-
+            <h3>Performance Charts</h3>
+            <div style="height: 300px">
+                <canvas id="myChart-{{ classifier.classifier_name }}"></canvas>
+            </div>
               
-            {% endblock metrics_chart%}
+            <script>
+                const ctx_{{ classifier.classifier_name }} = document.getElementById('myChart-{{ classifier.classifier_name }}');
+              
+                new Chart(ctx_{{ classifier.classifier_name }}, {
+                    type: 'scatter',
+                    data: {
+                        datasets: [{
+                            label: 'ROC Curve',
+                            data: {{ classifier.fpr_tpr | tojson }},
+                            borderWidth: 1,
+                            showLine: true
+                        }]
+                    },
+                });
+            </script>
         </div>
     {% endfor %}
 </body>

@@ -42,6 +42,14 @@ def render_report() -> None:
     env = Environment(loader=file_loader, autoescape=True)
     template = env.get_template("model_report_template.jinja2")
 
+    # save the list ie classifier_report_data to a file
+    with Path.open(base_template_path / "output.json", "w") as f:
+        # list to pure string conversion
+        f.write(str(classifier_report_data))
+        
+
+
+
     with Path.open(base_template_path / "output.html", "w") as f:
         print(template.render(classifiers=classifier_report_data), file=f)
 
