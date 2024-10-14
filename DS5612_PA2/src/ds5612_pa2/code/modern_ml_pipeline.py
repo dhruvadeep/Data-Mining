@@ -52,6 +52,7 @@ class ModernMLPipeline:
         """step_1 loads the data and trains a classifier on training data."""
         '''step_1: In this function, you have to load the data (using dataset_config), create the classifier and fit it on dataset_config.train_X'''
         '''You have to store the trained classifier in self.step1_classifier'''
+        self.dataset_config.load_data()
         self.step1_classifier = self.ml_model_config.create_classifier()
         self.step1_classifier.fit(self.dataset_config.train_X, self.dataset_config.train_y)
 
@@ -59,17 +60,28 @@ class ModernMLPipeline:
         """step_2_3_4 does HP tuning and trains a classifier with best HP values."""
         '''step_2_3_4: In this function, you will create a hyper parameter tuned classifier using the create_hyperparameter_tuner function. Then you will fit it with dataset_config.train_and_validation_X.'''
         '''You have to store the trained classifier in self.step2_classifier'''
-        self.hp_config.create_hyperparameter_tuner(self.ml_model_config)
-        self.hp_config.fit(self.dataset_config.train_and_validation_X, self.dataset_config.train_and_validation_y)
-        self.step2_classifier = self.hp_config.predict(self.dataset_config.train_and_validation_X)
+        self.hp_tuner = self.hp_config.create_hyperparameter_tuner(self.ml_model_config)
+        self.hp_tuner.fit(self.dataset_config.train_and_validation_X, self.dataset_config.train_and_validation_y)
+        self.step2_classifier = self.hp_tuner.best_estimator_
 
     def step_5(self) -> None:
         """step_5 does error estimation."""
         '''step_5: In this function, you will estimate the error using the estimate_error function. You have to store the error_estimator in self.error_estimator'''
+        self.error_estimator = estimate_error(
+            self.hp_tuner, self.dataset_config.train_and_validation_X, self.dataset_config.train_and_validation_y
+        )
         
+
     def step_6(self) -> None:
         """step_6 trains model on full data."""
-        self.step6_classifier = None
+        self.step_6_classifier = self.ml_model_config.create_classifier(
+            **self.hp_tuner.best_params_
+        )
+        self.step_6_classifier.fit(self.dataset_config.train_and_validation_and_test_X, self.dataset_config.train_and_validation_and_test_y)
+
+        
+
+
 
     ######################End: Make changes here######################
 
