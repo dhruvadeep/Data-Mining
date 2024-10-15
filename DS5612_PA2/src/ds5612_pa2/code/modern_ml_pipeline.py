@@ -62,24 +62,23 @@ class ModernMLPipeline:
         '''You have to store the trained classifier in self.step2_classifier'''
         self.hp_tuner = self.hp_config.create_hyperparameter_tuner(self.ml_model_config)
         self.hp_tuner.fit(self.dataset_config.train_and_validation_X, self.dataset_config.train_and_validation_y)
-        self.step2_classifier = self.hp_tuner.best_estimator_
+        self.step2_classifier = self.hp_tuner
 
     def step_5(self) -> None:
         """step_5 does error estimation."""
         '''step_5: In this function, you will estimate the error using the estimate_error function. You have to store the error_estimator in self.error_estimator'''
-        self.error_estimator = estimate_error(
-            self.hp_tuner, self.dataset_config.train_and_validation_X, self.dataset_config.train_and_validation_y
-        )
-        
+        self.step5_classifier = self.ml_model_config.create_classifier()
+        self.step5_classifier.fit(self.dataset_config.train_and_validation_X, self.dataset_config.train_and_validation_y)
+        self.error_estimator = ErrorEstimator(algorithm=ErrorEstimationAlgos.TRAIN_VAL)
+        self.error_estimator = estimate_error(self.dataset_config, self.step5_classifier, self.error_estimator)        
+
 
     def step_6(self) -> None:
         """step_6 trains model on full data."""
-        self.step_6_classifier = self.ml_model_config.create_classifier(
-            **self.hp_tuner.best_params_
-        )
-        self.step_6_classifier.fit(self.dataset_config.train_and_validation_and_test_X, self.dataset_config.train_and_validation_and_test_y)
+        '''step_6: In this function, you will train the classifier on the full data (train, validation, test) and store it in self.step6_classifier'''
+        self.step6_classifier = self.hp_tuner
+        self.step6_classifier.fit(self.dataset_config.train_val_test_X, self.dataset_config.train_val_test_y)
 
-        
 
 
 
